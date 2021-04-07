@@ -1,3 +1,14 @@
-# Dependency directories
+# TypeScript output folder
+dist/
+
+# Dependency directories 
 node_modules/
+package-lock.json
+
+# Environment variables file
 .env
+
+# Local logs
+npm-debug.logs
+.DS_Store
+.vscode
