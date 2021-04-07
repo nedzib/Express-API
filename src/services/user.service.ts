@@ -8,21 +8,6 @@
 import { Client } from 'pg'
 import { Config } from "../config/config"
 
-const listUser = [
-    {
-        id: 1,
-        name: "Ned",
-    },
-    {
-        id: 2,
-        name: "Lula",
-    },
-    {
-        id: 3,
-        name: "Nil",
-    }
-]
-
 export class UserService {
     private id: number
     private name: string
@@ -34,101 +19,133 @@ export class UserService {
 
     public getUser = async (userId: number): Promise<any> => {
         if (userId < 0) {
-            throw new Error("internal_server_error")
+            throw new Error("Internal_server_error")
         }
         const objConfig: Config = new Config()
-        // Instancia de la clase Client para la base de datos
+        // Instancia de la clase Client para base de datos
         const client: Client = new Client({ connectionString: objConfig.connection() })
-        // Conexion a la base de datos
-        client.connect((err) =>{
-            if (err){
-                console.log("Conexion")
-                throw new Error("internal_server_error")
+        // Conexion a base de datos
+        client.connect((error) => {
+            if (error) {
+                throw new Error('internal_server_error')
             }
         })
         try {
             const result = await client.query(`SELECT * FROM users WHERE id = '${userId}' AND status = 'true'`)
-            if(result.rows.length === 1){
+            if (result.rows.length === 1) {
                 this.id = result.rows[0].id
                 this.name = result.rows[0].name
             }
-        } catch (error){
-            throw new Error("internal_server_error")
+        } catch (error) {
+            throw new Error('internal_server_error')
         }
-        // listUser.forEach(element => {
-        //     if (element.id === userId) {
-        //         this.id = element.id
-        //         this.name = element.name
-        //     }
-        // })
         return {
-            id: this.id,
-            name: this.name
+            'id': this.id,
+            'name': this.name
         }
     }
 
-    // public getListUser = (): any => {
-    //     return listUser
-    // }
+    public getListUser = async (): Promise<any> => {
+        let listUser: any = ''
+        const objConfig: Config = new Config()
+        // Instancia de la clase Client para base de datos
+        const client: Client = new Client({ connectionString: objConfig.connection() })
+        // Conexion a base de datos
+        client.connect((error) => {
+            if (error) {
+                throw new Error('internal_server_error')
+            }
+        })
+        try {
+            const result = await client.query(`SELECT * FROM users WHERE status = 'true'`)
+            listUser = result.rows
+        } catch (error) {
+            throw new Error('internal_server_error')
+        }
+        return listUser
+    }
 
-    // public createUser = (userId: number, userName: string): any => {
-    //     let ifExist: boolean = false
-    //     listUser.forEach(element => {
-    //         if (element.id === userId) {
-    //             ifExist = true
-    //         }
-    //     })
-    //     if (!ifExist) {
-    //         const newUser = {
-    //             id: userId,
-    //             name: userName
-    //         }
-    //         listUser.push(newUser)
-    //         return newUser
-    //     } else {
-    //         return "exist"
-    //     }
-    // }
+    public createUser = async (userId: number, userName: string): Promise<any> => {
+        if (userId < 0) {
+            throw new Error("Internal_server_error")
+        }
+        const objConfig: Config = new Config()
+        // Instancia de la clase Client para base de datos
+        const client: Client = new Client({ connectionString: objConfig.connection() })
+        // Conexion a base de datos
+        client.connect((error) => {
+            if (error) {
+                throw new Error('internal_server_error')
+            }
+        })
+        try {
+            const result = await client.query(`SELECT * FROM users WHERE id = '${userId}'`)
+            if (result.rowCount >= 1) {
+                return "exist"
+            } else {
+                client.query(`insert into users (id,name,status) values ('${userId}','${userName}',true) `)
+                return {
+                    'id': userId,
+                    'name': userName
+                }
+            }
+        } catch (error) {
+            throw new Error('internal_server_error')
+        }
+    }
 
-    // public editUser = (userId: number, userName: string): any => {
-    //     let ifExist: boolean = false
-    //     let userEdited: any = ""
+    public editUser = async (userId: number, userName: string): Promise<any> => {
+        if (userId < 0) {
+            throw new Error("Internal_server_error")
+        }
+        const objConfig: Config = new Config()
+        // Instancia de la clase Client para base de datos
+        const client: Client = new Client({ connectionString: objConfig.connection() })
+        // Conexion a base de datos
+        client.connect((error) => {
+            if (error) {
+                throw new Error('internal_server_error')
+            }
+        })
+        try {
+            let result = await client.query(`SELECT * FROM users WHERE id = '${userId}'`)
+            if (result.rowCount === 0) {
+                return "notExist"
+            } else {
+                client.query(`UPDATE users SET name ='${userName}' where id=${userId}`)
+                client.query(`UPDATE users SET status ='true' where id=${userId}`)
+                result = await client.query(`SELECT * FROM users WHERE id = '${userId}'`)
+                return result.rows
+            }
+        } catch (error) {
+            throw new Error('internal_server_error')
+        }
+    }
 
-    //     listUser.forEach((element, index) => {
-    //         if (element.id === userId) {
-    //             ifExist = true
-    //             userEdited = {
-    //                 id: userId,
-    //                 name: userName
-    //             }
-    //             element.name = userEdited.name
-    //             listUser[index] = element
-    //         }
-    //     })
-    //     if (!ifExist) {
-    //         return "notExist"
-    //     } else {
-    //         return userEdited
-    //     }
-    // }
-
-    // public deleteUser = (userId: number): any => {
-    //     let ifExist: boolean = false
-    //     let userDeleted: any = ""
-    //     listUser.forEach((element, index) => {
-    //         if (element.id === userId) {
-    //             ifExist = true
-    //             userDeleted = {
-    //                 id: element.id,
-    //                 name: element.name
-    //             }
-    //             listUser.splice(index, 1);
-    //         }
-    //     })
-    //     if (!ifExist) {
-    //         return "notExist"
-    //     } else {
-    //         return userDeleted
-    //     }
-    // }
+    public deleteUser = async (userId: number): Promise<any> => {
+        if (userId < 0) {
+            throw new Error("Internal_server_error")
+        }
+        const objConfig: Config = new Config()
+        // Instancia de la clase Client para base de datos
+        const client: Client = new Client({ connectionString: objConfig.connection() })
+        // Conexion a base de datos
+        client.connect((error) => {
+            if (error) {
+                throw new Error('internal_server_error')
+            }
+        })
+        try {
+            let result = await client.query(`SELECT * FROM users WHERE id = '${userId}'`)
+            if (result.rowCount === 0) {
+                return "notExist"
+            } else {
+                client.query(`UPDATE users SET status = false where id=${userId}`)
+                result = await client.query(`SELECT * FROM users WHERE id = '${userId}'`)
+                return result.rows
+            }
+        } catch (error) {
+            throw new Error('internal_server_error')
+        }
+    }
 }

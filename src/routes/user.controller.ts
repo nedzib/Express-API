@@ -13,9 +13,9 @@ export class UserController {
     // Metodo de la clase ControllerEntidad
     public routes(app: any) {
         // Endpoint get all users
-        app.route('/user/list').get((req: express.Request, res: express.Response) => {
+        app.route('/user/list').get(async (req: express.Request, res: express.Response) => {
             const objUserService: UserService = new UserService()
-            const allUsers = objUserService.getListUser()
+            const allUsers = await objUserService.getListUser()
             res.status(200).json({
                 data: allUsers,
                 status: null
@@ -23,7 +23,7 @@ export class UserController {
             res.end()
         })
         // Endpoint get
-        app.route('/user').get((req: express.Request, res: express.Response) => {
+        app.route('/user').get(async (req: express.Request, res: express.Response) => {
             const validation = getSchema.validate(req.query)
             if (validation.error) {
                 res.status(422).json({
@@ -34,7 +34,7 @@ export class UserController {
             } else {
                 try {
                     const objUserService: UserService = new UserService()
-                    const user = objUserService.getUser(Number(req.query.id))
+                    const user = await objUserService.getUser(Number(req.query.id))
                     res.status(200).json({
                         data: user,
                         status: null
@@ -43,7 +43,7 @@ export class UserController {
                 } catch (error) {
                     res.status(500).json({
                         data: null,
-                        status: "internal_server_error"
+                        status: error
                     })
                     res.end()
                 }
@@ -51,7 +51,7 @@ export class UserController {
             }
         })
         // Endpoint post
-        app.route('/user').post((req: express.Request, res: express.Response) => {
+        app.route('/user').post(async (req: express.Request, res: express.Response) => {
             const validation = postSchema.validate(req.body)
             if (validation.error) {
                 console.log("Error in Valitation")
@@ -61,7 +61,7 @@ export class UserController {
                 }).end()
             } else {
                 const objUserService: UserService = new UserService()
-                const user = objUserService.createUser(Number(req.body.id), req.body.name)
+                const user = await objUserService.createUser(Number(req.body.id), req.body.name)
 
                 if (user === "exist") {
                     res.status(200).json({
@@ -79,7 +79,7 @@ export class UserController {
             }
         })
         // Endpoint put
-        app.route('/user').put((req: express.Request, res: express.Response) => {
+        app.route('/user').put(async (req: express.Request, res: express.Response) => {
             const validation = putSchema.validate(req.body)
             if (validation.error) {
                 res.status(422).json({
@@ -89,8 +89,7 @@ export class UserController {
                 res.end()
             } else {
                 const objUserService: UserService = new UserService()
-                const user = objUserService.editUser(Number(req.body.id), req.body.name)
-                console.log(user)
+                const user = await objUserService.editUser(Number(req.body.id), req.body.name)
                 if (user === "notExist") {
                     res.status(200).json({
                         data: {},
@@ -107,7 +106,7 @@ export class UserController {
             }
         })
         // Endpoint delete
-        app.route('/user').delete((req: express.Request, res: express.Response) => {
+        app.route('/user').delete(async (req: express.Request, res: express.Response) => {
             const validation = deleteSchema.validate(req.body)
             if (validation.error) {
                 console.log("Validation Error")
@@ -118,8 +117,7 @@ export class UserController {
                 res.end()
             } else {
                 const objUserService: UserService = new UserService()
-                const user = objUserService.deleteUser(Number(req.body.id))
-                console.log(user)
+                const user = await objUserService.deleteUser(Number(req.body.id))
                 if (user === "notExist") {
                     res.status(200).json({
                         data: {},
@@ -134,8 +132,6 @@ export class UserController {
                     res.end()
                 }
             }
-
-
         })
     }
 }
